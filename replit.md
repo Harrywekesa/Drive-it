@@ -1,6 +1,6 @@
-# [Project name]
+# Drive It Kenya
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A post-license driver education mobile app (Android/iOS) that embeds supervised driving sessions inside existing ride-hailing journeys. Learners book sessions through Uber, Bolt, or Wasili, and a certified instructor rides along to coach them through real traffic.
 
 ## Run & Operate
 
@@ -9,37 +9,66 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Mobile: Expo (React Native) with Expo Router file-based navigation
+- State: React Context + AsyncStorage (persisted local state)
+- Fonts: Inter via @expo-google-fonts/inter
+- Icons: @expo/vector-icons (Feather)
+- Haptics: expo-haptics
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/drive-it/` — Expo mobile app
+  - `app/` — Expo Router screens
+    - `(tabs)/index.tsx` — Home dashboard
+    - `(tabs)/sessions.tsx` — Sessions list with filters
+    - `(tabs)/profile.tsx` — Profile, achievements, transaction history
+    - `book.tsx` — 4-step booking flow with M-Pesa payment
+    - `session/[id].tsx` — Session detail, lifecycle controls, rating
+    - `edit-profile.tsx` — Profile editor
+  - `components/` — Shared UI components
+    - `MpesaModal.tsx` — Animated M-Pesa STK push simulation
+    - `SessionCard.tsx` — Reusable session summary card
+    - `StatCard.tsx` — Metric display card
+  - `context/AppContext.tsx` — Global state (sessions, transactions, user profile)
+  - `constants/colors.ts` — Drive It Kenya brand colours
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **No backend required for MVP** — all state lives in AsyncStorage on-device; ready to swap to a real API
+- **M-Pesa simulated client-side** — STK push flow is animated/timed simulation; real integration needs Daraja API server-side
+- **Context + AsyncStorage** over Redux — simple enough for current scale, persists across restarts
+- **File-based routing** via Expo Router — each screen is a file, modals are stack presentations
+- **Seed data** pre-populated on first launch to demonstrate the full UX without requiring real accounts
 
-## Product
+## Product Features
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Home dashboard — greeting, book CTA, progress stats, safety tip, upcoming/recent sessions
+- Session booking — 4-step wizard: platform → route → instructor → confirm & M-Pesa pay
+- M-Pesa payment modal — full STK push simulation with animated states (sending → waiting for PIN → processing → success with receipt)
+- Session lifecycle — Upcoming → Start → Active → Complete → Rate
+- Session detail — route, instructor info with call button, skills, pricing, M-Pesa receipt, star rating + feedback
+- Sessions tab — filterable list (All / Upcoming / Completed)
+- Profile — license card, stats, achievements, transaction history, edit profile
+- Transaction history — M-Pesa receipts with reference numbers and status badges
+- 5 certified instructors across Uber, Bolt, Wasili platforms
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Prefer real, simulated functionality over placeholders
+- App targets Android (APK) as primary output — use EAS Build for production APK
+- Kenyan market context: M-Pesa, Nairobi areas, KSh pricing
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- For APK: run `eas build -p android --profile preview` from `artifacts/drive-it/` with an Expo account
+- M-Pesa real integration requires Safaricom Daraja API (server-side STK push endpoint)
+- Expo web preview shows the app but targets Android/iOS — use Expo Go or EAS for native testing
 
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- GitHub: https://github.com/Harrywekesa/Drive-it
